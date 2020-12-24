@@ -39,35 +39,37 @@ class MainActivity : AppCompatActivity() {
         invalidateUi()
         val bitmap = image_view.drawable.toBitmap()
 
-        val generatedPalette = Palette.from(bitmap).generate()
+        Palette.from(bitmap).generate { palette ->
+            palette?.let {
+                Log.d(TAG, "swatches: ${it.swatches}")
 
-        Log.d(TAG, "swatches: ${generatedPalette.swatches}")
+                val vibrantSwatch = it.vibrantSwatch
 
-        val vibrantSwatch = generatedPalette.vibrantSwatch
+                var dominantColor = it.getDominantColor(Color.BLACK)
 
-        var dominantColor = generatedPalette.getDominantColor(Color.BLACK)
+                if (vibrantSwatch != null) {
+                    dominantColor = vibrantSwatch.rgb
+                }
+                val textColor = if (ColorUtils.calculateLuminance(dominantColor) >= 0.5) {
+                    Color.BLACK
+                } else {
+                    Color.WHITE
+                }
 
-        if (vibrantSwatch != null) {
-            dominantColor = vibrantSwatch.rgb
+                it.dominantSwatch?.let {
+                    dominantColor = it.rgb
+                }
+
+                val calculateLuminance = ColorUtils.calculateLuminance(dominantColor)
+
+                text_view_luminance.text = "Luminance : $calculateLuminance"
+
+                text_view_text_color.setTextColor(textColor)
+                text_view_text_color.setBackgroundDrawable(image_view.drawable)
+
+                text_view_dominant_color.setBackgroundColor(dominantColor)
+            }
         }
-        val textColor = if (ColorUtils.calculateLuminance(dominantColor) >= 0.5) {
-            Color.BLACK
-        } else {
-            Color.WHITE
-        }
-
-        generatedPalette.dominantSwatch?.let {
-            dominantColor = it.rgb
-        }
-
-        val calculateLuminance = ColorUtils.calculateLuminance(dominantColor)
-
-        text_view_luminance.text = "Luminance : $calculateLuminance"
-
-        text_view_text_color.setTextColor(textColor)
-        text_view_text_color.setBackgroundDrawable(image_view.drawable)
-
-        text_view_dominant_color.setBackgroundColor(dominantColor)
     }
 
     private fun invalidateUi() {
